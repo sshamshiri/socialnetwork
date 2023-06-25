@@ -3,6 +3,9 @@ from django.views import View
 from .models import Post
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from .forms import PostUpdateForm
+from django.utils.text import slugify
+
 
 class HomeView(View):
     def get(self,request):
@@ -23,3 +26,22 @@ class PostDeleteView(LoginRequiredMixin,View):
         else:
             messages.error(request,"You can't delete this post",'danger')
         return redirect('home:index')
+
+class PostUpdateView(LoginRequiredMixin,View):
+    form_class = PostUpdateForm
+
+    def setup(self , request , *args , **kwargs):
+        self.post_instance = Post.objects.get(pk=kwargs['post_id'])
+        return super().setup(request,*args , **kwargs)
+    
+    def dispatch(self , request , *args , **kwargs):
+        post = self.post_instance
+        if not post.user.id == request.user.id:
+            messages.success(request, "You can't update this post", 'danger')
+            return redirect('home:index')
+        return super().dispatch(request , *args , **kwargs)
+    
+    def get(self , request , *args , **kwargs):
+        post = self.post_instance
+        form = self.form_class(instance=post)
+        return render (request,'home/update.html',{'form':form})
