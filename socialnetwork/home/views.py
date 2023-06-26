@@ -45,3 +45,13 @@ class PostUpdateView(LoginRequiredMixin,View):
         post = self.post_instance
         form = self.form_class(instance=post)
         return render (request,'home/update.html',{'form':form})
+    
+    def post(self , request , *args , **kwargs):
+        post = self.post_instance
+        form = self.form_class(request.POST,instance=post)
+        if form.is_valid():
+            new_post = form.save(commit=False)
+            new_post.slug = slugify(form.cleaned_data['body'][:30])
+            new_post.save()
+            messages.success(request, 'You updated this post','success')
+            return redirect("home:post_detail" , post.id , post.slug )
