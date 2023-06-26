@@ -3,7 +3,7 @@ from django.views import View
 from .models import Post
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from .forms import PostUpdateForm
+from .forms import PostCreateUpdateForm
 from django.utils.text import slugify
 
 
@@ -28,7 +28,7 @@ class PostDeleteView(LoginRequiredMixin,View):
         return redirect('home:index')
 
 class PostUpdateView(LoginRequiredMixin,View):
-    form_class = PostUpdateForm
+    form_class = PostCreateUpdateForm
 
     def setup(self , request , *args , **kwargs):
         self.post_instance = Post.objects.get(pk=kwargs['post_id'])
