@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate , login , logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from home.models import Post
+from .models import Relation
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 
@@ -87,3 +87,16 @@ class UserPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
 
 class UserPasswordResetCompleteView(auth_views.PasswordResetCompleteView):
     template_name = 'accounts/password_reset_complete.html'
+
+
+class UserFollowView(LoginRequiredMixin,View):
+    def get(self,request,user_id):
+        user = User.objects.get(id=user_id)
+        relation = Relation.objects.filter(from_user=request.user , to_user=user)
+        if relation.exists():
+            messages.error(request, 'You are already following this user','danger')
+        else:
+            Relation(from_user=request.user , to_user=user).save()
+            messages.success(request, 'You followed this user','success')
+        return redirect('accounts:user_profile' , user.id)
+
