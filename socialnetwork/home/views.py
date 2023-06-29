@@ -2,10 +2,10 @@ from typing import Any
 from django.http.request import HttpRequest
 from django.shortcuts import render , redirect , get_object_or_404
 from django.views import View
-from .models import Post
+from .models import Post , Comment
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from .forms import PostCreateUpdateForm , CommentCreateForm
+from .forms import PostCreateUpdateForm , CommentCreateForm , CommentReplyForm
 from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -97,3 +97,20 @@ class PostCreateUpdateView(LoginRequiredMixin,View):
             new_post.save()
             messages.success(request,'You created a new post', 'success')
             return redirect('home:post_detail' , new_post.id , new_post.slug)
+
+class PostAddReplyView(LoginRequiredMixin,View):
+    form_class = CommentReplyForm
+
+    def post(self, request, post_id, comment_id):
+        post = get_object_or_404(Post,id=post_id)
+        comment = get_object_or_404(Comment,id=comment_id)
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            reply = form.save(commit=False)
+            reply.user = request.user
+            reply.post = post
+            reply.reply = comment
+            reply.is_reply = True
+            reply.save()
+            messages.success(request,'Your reply submitted successfully','success')
+        return redirect('home:post_detail' , post.id , post.slug )
