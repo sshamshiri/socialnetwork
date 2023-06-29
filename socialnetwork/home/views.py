@@ -18,6 +18,7 @@ class HomeView(View):
     
 class PostDetailView(View):
     form_class = CommentCreateForm
+    form_class_reply = CommentReplyForm
 
     def setup(self, request, *args, **kwargs):
         self.post_instance = get_object_or_404(Post, pk=kwargs['post_id'], slug=kwargs['post_slug'])
@@ -28,7 +29,8 @@ class PostDetailView(View):
         return render(request, 'home/detail.html',{
             'post':self.post_instance,
             'comments':comments,
-            'form':self.form_class
+            'form':self.form_class,
+            'reply_form':self.form_class_reply
             })
     
     @method_decorator(login_required)
